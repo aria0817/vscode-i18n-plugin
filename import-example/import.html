@@ -1,0 +1,41 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>WASM test</title>
+</head>
+
+<body>
+    <script>
+        // 从javascript导入函数到wasm
+        /**
+         * number类型变量 values: 它可以是一个变量。WebAssembly 的数据类型只有两种，int 类型和 float 类型，所以 values 必须是这两种类型中的一种
+           函数 function: 传入JavaScript函数, WebAssembly 不能主动操作DOM ,但是可以通过传递 JavaScript 函数过去，让 WebAssembly 调用，达到修改DOM的目的
+            内存 memory: memory 对象, 可以让 WebAssembly 模拟手动内存管理
+            表格 tables:  Table 是存在于 WebAssembly 内存之外的数组。它的值是对函数的引用。
+                        这些引用包含内存地址，但由于它不在 WebAssembly 的内存中，WebAssembly 不能看到这些地址
+                        但它确实可以访问数组索引。
+         * 
+         */
+        let importObject = {
+            imports: {
+                imported_func: arg => console.log(arg),
+            }
+        };
+
+        fetch('simple.wasm')
+            .then(res =>
+                res.arrayBuffer()
+            ).then(bytes =>
+                WebAssembly.instantiate(bytes, importObject)
+            ).then(results => {
+                results.instance.exports.exported_func();
+            });
+
+        
+    </script>
+</body>
+
+</html>

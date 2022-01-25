@@ -1,0 +1,40 @@
+<!doctype html>
+
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>WASM memory test</title>
+  </head>
+
+  <body>
+    <script>
+      // 创造内存 并且用它来存储一些值，然后导出一个函数并用它来对一些值进行求和操作。
+      // 初始和最大的单位是 WebAssembly pages ——这些页面的大小固定为64KB。这意味着上述内存实例的初始大小为640KB，最大大小为6.4MB。
+      var memory = new WebAssembly.Memory({initial:10, maximum:100});
+      //就是一个javascript对象 
+      // https://segmentfault.com/a/1190000010434237
+      // 虽然WebAssembly让你直接访问内存，但是管理的内存是受限制的，它可以直接管理该数组内部的字节，但它看不到任何超出此数组范围的内容。
+      // 如果代码尝试访问超出范围的地址，引擎将抛出异常
+
+      console.log('memory',memory);
+      WebAssembly.instantiateStreaming(fetch('memory.wasm'), { js: { mem: memory } })
+      .then(obj => {
+        
+        // 内存写入 写入1-10
+        var i32 = new Uint32Array(memory.buffer);
+        for (var i = 0; i < 10; i++) {
+          i32[i] = i;
+        }
+        //内存访问
+        console.log(new Uint32Array(memory.buffer)[0]);
+        var sum = obj.instance.exports.accumulate(0, 10);
+        console.log(sum);
+      });
+    </script>
+  </body>
+
+</html>
+
+
+

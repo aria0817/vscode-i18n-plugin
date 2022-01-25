@@ -1,0 +1,26 @@
+<!doctype html>
+
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>WASM table example</title>
+  </head>
+
+  <body>
+    <script>
+      var table = new WebAssembly.Table({ element: "anyfunc", initial: 1, maximum: 10 });
+      // 调用grow方法可以扩增table的大小
+      table.grow(1);
+      console.log(table.length);
+      // instantiateStreaming方法是直接从流式底层源编译和实例化WebAssembly模块
+      WebAssembly.instantiateStreaming(fetch('table.wasm'))
+      .then(function(obj) {
+        var tbl = obj.instance.exports.tbl;
+        console.log(tbl.get(0)());  // 13
+        console.log(tbl.get(1)());  // 42
+      });
+    </script>
+  </body>
+
+</html>

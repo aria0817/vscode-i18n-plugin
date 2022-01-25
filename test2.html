@@ -10,19 +10,39 @@
 
 <body>
     <script>
-        import loadWebAssembly from './test.js'
-        console.log(loadWebAssembly);
+        // 实现在javascript中调用wasm方法 
         /**
-         * 在最开始的例子里，已经很简化的将执行 WebAssembly 的步骤写出来了，其实就是 【加载文件】->【转成 buffer】->【编译】->【实例化】。
-
-                function loadWebAssembly (path) {
-                    return fetch(path)                   // 加载文件        
-                        .then(res => res.arrayBuffer())    // 转成 ArrayBuffer
-                        .then(WebAssembly.instantiate)     // 编译 + 实例化
-                        .then(mod => mod.instance)         // 提取生成都模块
-                    }
+         * WebAssembly还没有和<script type='module'>或ES6的import语句集成，也就是说，当前还没有内置的方式让浏览器为你获取模块。
+         * 当前唯一的方式就是创建一个包含你的WebAssembly模块二进制代码的 ArrayBuffer 并且使用WebAssembly.instantiate()编译它
+         * 【加载文件】->【转成 buffer】->【编译】->【实例化】。
+         * 
         */
-        
+        fetch('fib.wasm').then(response => {
+            console.log('arrayBuffer');
+            return response.arrayBuffer()
+        }
+        ).then(bytes => {
+            console.log(bytes);
+            //把 WebAssembly 二进制代码编译为一个 WebAssembly.Module
+            return WebAssembly.compile(bytes)
+        }
+        ).then(mod => {
+            /**
+             * //mod: WebAssembly.Module 
+             * 表示一个已经被浏览器编译为可执行机器码的WebAssembly二进制代码。一个模块是无状态的，
+             * 并且像一个二进制大对象（Blob）一样能够被缓存到IndexedDB中或者在windows和workers之间进行共享（通过postMessage() (en-US)函数。
+             * 一个模块能够像一个ES2015的模块一样声明导入和导出。
+            */
+            console.log('Module',mod);
+            const instance = new WebAssembly.Instance(mod)
+            console.log('实例',instance);
+            const a = instance.exports
+            console.log(a)
+            console.time("__fib__");
+            var re = a._Z3fibi(45);
+            console.timeEnd("__fib__");
+
+        });
     </script>
 </body>
 
