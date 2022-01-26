@@ -161,6 +161,40 @@ WebAssembly是被设计成JavaScript的一个完善、补充，而不是一个�
 - **ES6 模块集成** 。浏览器正在添加 使用 `script` 标签来加载 JavaScript 模块的支持。新特性添加之后， 即使 `<script src=url type="module">` 中 url 指向 WebAssembly 模块，也可以正常生效。
 
 <br>
+
+## 4. 实操c++编译成webAssembly 
+
+```
+使用 Emscripten 来编译成wasm，使用https://github.com/webassembly/wabt  .wasm .wat 互相转换
+
+// Emscripten
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+git pull
+./emsdk install latest
+./emsdk activate latest
+# 以后每次打开shell都要执行下面这行
+# 如果不想每次都手动操作的话可以写到.bashrc里面
+source ./emsdk_env.sh
+
+// SIDE_MODULE=1 使编译出来的 wasm 文件作为一个单独的动态库，这样就不需要那一堆胶水代码了，不过与 JS 部分的交互也需要自己完成
+emcc ./methods/fib.c -O3 -s SIDE_MODULE=1 -o ./output/fib.wasm
+
+// wabt
+git clone --recursive https://github.com/WebAssembly/wabt
+cd wabt
+git submodule update --init
+
+mkdir build
+cd build
+cmake ..
+cmake --build .
+
+cd ../
+bin/wasm2wat ../output/fib.wasm -o ../output/fib.wat
+
+```
+
 ## 参考链接：
 
 https://hacks.mozilla.org/2017/07/memory-in-webassembly-and-why-its-safer-than-you-think/
@@ -169,5 +203,6 @@ https://codeantenna.com/a/5psNvdffhw
 
 https://webassembly.org/
 
-https://codeantenna.com/a/5psNvdffhw
+https://juejin.cn/post/6914148755738460168#heading-3
+
 
